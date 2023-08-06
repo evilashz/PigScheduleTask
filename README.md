@@ -1,6 +1,6 @@
 # PigScheduleTask
 
-添加计划任务方法集合
+添加计划任务方法集合，欢迎PR其他方法，如Powershell、vbs等
 
 -----
 
