@@ -1,0 +1,213 @@
+import "ms-dtyp.idl";
+
+[
+    uuid(86D35949-83C9-4044-B424-DB363231FD0C),
+    version(1.0),
+    pointer_default(unique)
+]
+interface ITaskSchedulerService
+{
+    enum credFlag
+    {
+        credFlagDefault = 0x1
+    };
+
+
+    typedef struct _TASK_USER_CRED
+    {
+        [string] const wchar_t* userId;
+        [string] const wchar_t* password;
+        DWORD flags;
+    } TASK_USER_CRED;
+
+
+    typedef struct _TASK_XML_ERROR_INFO
+    {
+        DWORD line, column;
+        [string] wchar_t* node;
+        [string] wchar_t* value;
+    } TASK_XML_ERROR_INFO, * PTASK_XML_ERROR_INFO;
+
+    typedef [string] wchar_t** TASK_NAMES;
+
+    HRESULT
+        SchRpcHighestVersion
+        (
+            [out] DWORD* pVersion
+        );
+
+    HRESULT
+        SchRpcRegisterTask
+        (
+            [in, string, unique] const wchar_t* path,
+            [in, string] const wchar_t* xml,
+            [in] DWORD flags,
+            [in, string, unique] const wchar_t* sddl,
+            [in] DWORD logonType,
+            [in] DWORD cCreds,
+            [in, size_is(cCreds), unique] const TASK_USER_CRED* pCreds,
+            [out, string] wchar_t** pActualPath,
+            [out] PTASK_XML_ERROR_INFO* pErrorInfo
+        );
+
+    HRESULT
+        SchRpcRetrieveTask
+        (
+            [in, string] const wchar_t* path,
+            [in, string] const wchar_t* lpcwszLanguagesBuffer,
+            [in] unsigned long* pulNumLanguages,
+            [out, string] wchar_t** pXml
+        );
+
+    HRESULT
+        SchRpcCreateFolder
+        (
+            [in, string] const wchar_t* path,
+            [in, string, unique] const wchar_t* sddl,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcSetSecurity
+        (
+            [in, string] const wchar_t* path,
+            [in, string] const wchar_t* sddl,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcGetSecurity
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD securityInformation,
+            [out, string] wchar_t** sddl
+        );
+
+    HRESULT
+        SchRpcEnumFolders
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD flags,
+            [in, out] DWORD* pStartIndex,
+            [in] DWORD cRequested,
+            [out] DWORD* pcNames,
+            [out, string, size_is(, *pcNames)] TASK_NAMES* pNames
+        );
+
+    HRESULT
+        SchRpcEnumTasks
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD flags,
+            [in, out] DWORD* startIndex,
+            [in] DWORD cRequested,
+            [out] DWORD* pcNames,
+            [out, string, size_is(, *pcNames)] TASK_NAMES* pNames
+        );
+
+    HRESULT
+        SchRpcEnumInstances
+        (
+            [in, string, unique] const wchar_t* path,
+            [in] DWORD flags,
+            [out] DWORD* pcGuids,
+            [out, size_is(, *pcGuids)] GUID** pGuids
+        );
+
+    HRESULT
+        SchRpcGetInstanceInfo
+        (
+            [in] GUID guid,
+            [out, string] wchar_t** pPath,
+            [out] DWORD* pState, //TASK_STATE
+            [out, string] wchar_t** pCurrentAction,
+            [out, string] wchar_t** pInfo,
+            [out] DWORD* pcGroupInstances,
+            [out, size_is(, *pcGroupInstances)] GUID** pGroupInstances,
+            [out] DWORD* pEnginePID
+        );
+
+    HRESULT
+        SchRpcStopInstance
+        (
+            [in] GUID guid,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcStop
+        (
+            [in, string, unique] const wchar_t* path,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcRun
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD cArgs,
+            [in, string, size_is(cArgs), unique] const wchar_t** pArgs,
+            [in] DWORD flags,
+            [in] DWORD sessionId,
+            [in, unique, string] const wchar_t* user,
+            [out] GUID* pGuid
+        );
+
+    HRESULT
+        SchRpcDelete
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcRename
+        (
+            [in, string] const wchar_t* path,
+            [in, string] const wchar_t* newName,
+            [in] DWORD flags
+        );
+
+    HRESULT
+        SchRpcScheduledRuntimes
+        (
+            [in, string] const wchar_t* path,
+            [in, unique] PSYSTEMTIME start,
+            [in, unique] PSYSTEMTIME end,
+            [in] DWORD flags,
+            [in] DWORD cRequested,
+            [out] DWORD* pcRuntimes,
+            [out, size_is(, *pcRuntimes)] PSYSTEMTIME* pRuntimes
+        );
+
+    HRESULT
+        SchRpcGetLastRunInfo
+        (
+            [in, string] const wchar_t* path,
+            [out] PSYSTEMTIME pLastRuntime,
+            [out] DWORD* pLastReturnCode
+        );
+
+    HRESULT
+        SchRpcGetTaskInfo
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD flags,
+            [out] DWORD* pEnabled,
+            [out] DWORD* pState //TASK_STATE
+        );
+
+    HRESULT
+        SchRpcGetNumberOfMissedRuns
+        (
+            [in, string] const wchar_t* path,
+            [out] DWORD* pNumberOfMissedRuns
+        );
+
+    HRESULT
+        SchRpcEnableTask
+        (
+            [in, string] const wchar_t* path,
+            [in] DWORD enabled
+        );
+}
